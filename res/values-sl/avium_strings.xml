@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="avium_gesture_freeform_hint">Spustite za vstop v prosti način</string>
+    <string name="avium_gesture_swipe_up_hint">Nadaljujte s potegom navzgor za prosti način</string>
+</resources>

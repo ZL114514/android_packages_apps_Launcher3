@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="avium_gesture_freeform_hint">Atleiskite, kad patektumėte į laisvąjį režimą</string>
+    <string name="avium_gesture_swipe_up_hint">Toliau braukite aukštyn, kad patektumėte į laisvąjį režimą</string>
+</resources>

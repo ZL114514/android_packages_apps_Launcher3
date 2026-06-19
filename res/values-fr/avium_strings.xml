@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="avium_gesture_freeform_hint">Relâcher pour passer en mode libre</string>
+    <string name="avium_gesture_swipe_up_hint">Continuez à balayer pour le mode libre</string>
+</resources>

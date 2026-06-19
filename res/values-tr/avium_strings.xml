@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="avium_gesture_freeform_hint">Serbest moda girmek için bırakın</string>
+    <string name="avium_gesture_swipe_up_hint">Serbest moda geçmek için yukarı kaydırmaya devam edin</string>
+</resources>

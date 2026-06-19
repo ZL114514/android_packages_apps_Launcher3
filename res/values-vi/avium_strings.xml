@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="avium_gesture_freeform_hint">Thả ra để vào chế độ tự do</string>
+    <string name="avium_gesture_swipe_up_hint">Tiếp tục vuốt lên để vào chế độ tự do</string>
+</resources>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="avium_gesture_freeform_hint">離してフリーフォームに切り替え</string>
+    <string name="avium_gesture_swipe_up_hint">さらに上にスワイプしてフリーフォームへ</string>
+</resources>

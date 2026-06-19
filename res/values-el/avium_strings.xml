@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="avium_gesture_freeform_hint">Αφήστε για είσοδο σε ελεύθερη λειτουργία</string>
+    <string name="avium_gesture_swipe_up_hint">Συνεχίστε το σάρωμα προς τα πάνω για ελεύθερη λειτουργία</string>
+</resources>

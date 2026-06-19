@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="avium_gesture_freeform_hint">Eliberați pentru modul liber</string>
+    <string name="avium_gesture_swipe_up_hint">Continuați să glisați în sus pentru modul liber</string>
+</resources>

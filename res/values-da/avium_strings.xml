@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="avium_gesture_freeform_hint">Slip for at åbne frit vindue</string>
+    <string name="avium_gesture_swipe_up_hint">Fortsæt med at stryge op for frit vindue</string>
+</resources>

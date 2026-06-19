@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="avium_gesture_freeform_hint">Відпустіть для входу у вільний режим</string>
+    <string name="avium_gesture_swipe_up_hint">Продовжуйте гортати вгору для вільного режиму</string>
+</resources>

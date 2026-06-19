@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="avium_gesture_freeform_hint">Vabastage, et siseneda vabasse režiimi</string>
+    <string name="avium_gesture_swipe_up_hint">Jätkake ülespoole libistamist vabasse režiimi sisenemiseks</string>
+</resources>

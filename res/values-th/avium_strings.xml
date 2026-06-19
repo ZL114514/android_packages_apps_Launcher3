@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="avium_gesture_freeform_hint">ปล่อยเพื่อเข้าสู่โหมดอิสระ</string>
+    <string name="avium_gesture_swipe_up_hint">ปัดขึ้นต่อเพื่อเข้าสู่โหมดอิสระ</string>
+</resources>

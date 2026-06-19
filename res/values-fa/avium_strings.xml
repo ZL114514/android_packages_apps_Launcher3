@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="avium_gesture_freeform_hint">رها کنید تا وارد حالت آزاد شوید</string>
+    <string name="avium_gesture_swipe_up_hint">ادامه دهید به بالا کشیدن برای ورود به حالت آزاد</string>
+</resources>

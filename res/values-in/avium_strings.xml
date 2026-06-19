@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="avium_gesture_freeform_hint">Lepaskan untuk masuk ke mode bebas</string>
+    <string name="avium_gesture_swipe_up_hint">Lanjutkan mengusap ke atas untuk mode bebas</string>
+</resources>
