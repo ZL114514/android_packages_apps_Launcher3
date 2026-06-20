@@ -98,6 +98,9 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnDrawListener;
 import android.view.ViewTreeObserver.OnScrollChangedListener;
 import android.view.WindowInsets;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.AnimationSet;
 import android.view.animation.Interpolator;
 import android.widget.Toast;
 import android.window.DesktopExperienceFlags;
@@ -122,7 +125,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.VisibleForTesting;
-
+import com.android.app.animation.Interpolators;
 import com.android.internal.jank.Cuj;
 import com.android.internal.util.LatencyTracker;
 import com.android.launcher3.AbstractFloatingView;
@@ -135,6 +138,7 @@ import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.anim.AnimationSuccessListener;
 import com.android.launcher3.anim.AnimatorPlaybackController;
+import com.android.launcher3.anim.PendingAnimation;
 import com.android.launcher3.compat.AccessibilityManagerCompat;
 import com.android.launcher3.dagger.LauncherComponentProvider;
 import com.android.launcher3.dragndrop.DragView;
@@ -242,13 +246,11 @@ public abstract class AbsSwipeUpHandler<
     // The previous task view type before the user quick switches between tasks
     private TaskViewType mPreviousTaskViewType;
     //Ext add
-    private static final float CUSTOM_GESTURE_TRIGGER_THRESHOLD = 3.5f;
+    private static final float CUSTOM_GESTURE_TRIGGER_THRESHOLD = 3f;
+    private static final float FREEFORM_HINT_START = 1.5f;
     private static final String ACTION_PIN_LAST_APP = "org.avium.PINNED_LAST_APP";
     private boolean mAviumGestureHintShown = false;
     private FreeformHintView mFreeformHintView = null;
-    private static final float FREEFORM_HINT_ALPHA_START = 1.5f;
-    private static final float FREEFORM_HINT_TEXT_SWITCH = 3.0f;
-
     private static int FLAG_COUNT = 0;
     private static int getNextStateFlag(String name) {
         if (DEBUG_STATES) {
@@ -1041,50 +1043,70 @@ public abstract class AbsSwipeUpHandler<
         applyScrollAndTransform();
 
         updateLauncherTransitionProgress();
-        boolean isAviumGestureEnable = android.os.SystemProperties.getBoolean("persist.avium.launchergesture", false);
-        boolean shouldShow = mCurrentShift.value > FREEFORM_HINT_ALPHA_START && isAviumGestureEnable;
-        if (shouldShow) {
-            if (mFreeformHintView == null) {
-                mFreeformHintView = new FreeformHintView(mContext);
-                mFreeformHintView.attachToContainer(mContainer);
+        boolean isAviumGestureEnable = android.os.SystemProperties.getBoolean(
+                "persist.avium.launchergesture", false);
+        if (!isAviumGestureEnable) return;
+
+        float shift = mCurrentShift.value;
+
+        FreeformHintView.HintPhase phase = FreeformHintView.HintPhase.EXPAND;
+        if (shift < FREEFORM_HINT_START) {
+            phase = FreeformHintView.HintPhase.HIDDEN;
+        } else if (shift < CUSTOM_GESTURE_TRIGGER_THRESHOLD) {
+            phase = FreeformHintView.HintPhase.SWIPE_UP_HINT;
+        }
+        if (mFreeformHintView == null) {
+            mFreeformHintView = new FreeformHintView(mContext);
+            mFreeformHintView.attachToContainer(mContainer);
+        }
+
+        // Pass current display rotation for orientation-aware positioning
+        if (mRecentsView != null) {
+            mFreeformHintView.setDisplayRotation(
+                    mRecentsView.getPagedViewOrientedState().getDisplayRotation());
+        }
+
+        mFreeformHintView.setPhase(phase);
+
+        if (phase != FreeformHintView.HintPhase.EXPAND) {
+            restoreOtherTaskViews();
+            return;
+        }
+        if (mRecentsView != null) {
+            TaskView runningTaskView = mRecentsView.getRunningTaskView();
+            if (runningTaskView != null) {
+                Rect thumbnailBounds = new Rect();
+                runningTaskView.getThumbnailBounds(thumbnailBounds, /* relativeToDragLayer= */ true);
+                mFreeformHintView.setTaskBounds(thumbnailBounds);
             }
-            float hintAlpha = (mCurrentShift.value - FREEFORM_HINT_ALPHA_START)
-                    / (CUSTOM_GESTURE_TRIGGER_THRESHOLD - FREEFORM_HINT_ALPHA_START);
-            hintAlpha = Math.max(0, Math.min(1, hintAlpha));
-            mFreeformHintView.setHintAlpha(hintAlpha);
-            boolean isSwipeUp = mCurrentShift.value < FREEFORM_HINT_TEXT_SWITCH;
-            mFreeformHintView.setShowSwipeUpText(isSwipeUp);
-            if (mRecentsView != null) {
-                TaskView runningTask = mRecentsView.getRunningTaskView();
-                if (runningTask != null) {
-                    ViewGroup dragLayer = mContainer.getDragLayer();
-                    if (dragLayer != null) {
-                        int[] taskLoc = new int[2];
-                        int[] dlLoc = new int[2];
-                        runningTask.getLocationInWindow(taskLoc);
-                        dragLayer.getLocationInWindow(dlLoc);
-                        android.graphics.Rect taskSize = mRecentsView.getLastComputedTaskSize();
-                        int taskW = taskSize.width();
-                        int taskH = taskSize.height();
-                        int relX = taskLoc[0] - dlLoc[0];
-                        int relY = taskLoc[1] - dlLoc[1];
-                        // Use computed stable task card size + actual view position
-                        mFreeformHintView.setTaskBounds(relX, relY, taskW, taskH);
-                        if (!isSwipeUp) {
-                            float relProgress = (mCurrentShift.value - FREEFORM_HINT_TEXT_SWITCH)
-                                    / (CUSTOM_GESTURE_TRIGGER_THRESHOLD - FREEFORM_HINT_TEXT_SWITCH);
-                            relProgress = Math.max(0, Math.min(1, relProgress));
-                            mFreeformHintView.setReleaseProgress(relProgress);
-                        }
-                    }
-                }
+            if (phase == FreeformHintView.HintPhase.EXPAND) {hideOtherTaskViews(runningTaskView);}
+        }
+    }
+
+    private void hideOtherTaskViews(TaskView runningTask) {
+        if (mRecentsView == null) return;
+        for (int i = mRecentsView.getTaskViewCount(); i >= 0; i--) {
+            TaskView tv = mRecentsView.getTaskViewAt(i);
+            if (tv != null && tv != runningTask) {
+                tv.animate()
+                        .alpha(0f)
+                        .setInterpolator(Interpolators.FAST_OUT_SLOW_IN)
+                        .setDuration(50)
+                        .start();
             }
-            if (isSwipeUp) {
-                mFreeformHintView.setReleaseProgress(0f);
-            }
-        } else {
-            if (mFreeformHintView != null) {
-                mFreeformHintView.setHintAlpha(0);
+        }
+    }
+
+    private void restoreOtherTaskViews() {
+        if (mRecentsView == null) return;
+        for (int i = mRecentsView.getTaskViewCount(); i >= 0; i--) {
+            TaskView tv = mRecentsView.getTaskViewAt(i);
+            if (tv != null) {
+                tv.animate()
+                        .alpha(1f)
+                        .setInterpolator(Interpolators.FAST_OUT_SLOW_IN)
+                        .setDuration(50)
+                        .start();
             }
         }
     }
@@ -1642,14 +1664,20 @@ public abstract class AbsSwipeUpHandler<
         if (progress > CUSTOM_GESTURE_TRIGGER_THRESHOLD && isAviumGestureEnable) {
             onAviumFloatWindowGesture();
             finalEndTarget = GestureState.GestureEndTarget.REJECT_HOME;
+            if (mFreeformHintView != null) {
+                mFreeformHintView.setPhase(FreeformHintView.HintPhase.HIDDEN);
+                mFreeformHintView.detachFromContainer();
+            }
         } else {
             finalEndTarget = calculatedEndTarget;
         }
         // Reset gesture hint state when gesture ends
         mAviumGestureHintShown = false;
         if (mFreeformHintView != null) {
-            mFreeformHintView.animateOut(null);
+            mFreeformHintView.setPhase(FreeformHintView.HintPhase.HIDDEN);
+            mFreeformHintView.detachFromContainer();
         }
+        restoreOtherTaskViews();
         long duration = MAX_SWIPE_DURATION;
         float currentShift = mCurrentShift.value;
 
