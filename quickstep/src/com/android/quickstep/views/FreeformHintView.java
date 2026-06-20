@@ -77,7 +77,7 @@ public class FreeformHintView extends FrameLayout {
     public FreeformHintView(Context context) {
         super(context);
         setLayerType(LAYER_TYPE_HARDWARE, null);
-
+        setWillNotDraw(false);
         Resources res = context.getResources();
         float density = res.getDisplayMetrics().density;
 
@@ -99,6 +99,7 @@ public class FreeformHintView extends FrameLayout {
 
         mIconView = new ImageView(context);
         mIconView.setBackgroundResource(R.drawable.desktop_mode_ic_taskbar_menu_manage_windows);
+        mIconView.setColorFilter(Color.WHITE);
         int iconSizePx = (int) mIconSize;
         int topMargin = (int) ((mCardHeight - mIconSize) / 2);
         FrameLayout.LayoutParams iconLp = new FrameLayout.LayoutParams(iconSizePx, iconSizePx);
@@ -107,7 +108,7 @@ public class FreeformHintView extends FrameLayout {
         iconLp.gravity = Gravity.TOP | Gravity.START;
         addView(mIconView, iconLp);
 
-        setVisibility(View.INVISIBLE);
+        setVisibility(View.VISIBLE);
         setScaleX(0.85f);
         setScaleY(0.85f);
     }
@@ -117,7 +118,6 @@ public class FreeformHintView extends FrameLayout {
         if (mPhase == phase) return;
         HintPhase prev = mPhase;
         mPhase = phase;
-        setVisibility(View.VISIBLE);
 
         switch (phase) {
             case HIDDEN:
@@ -222,7 +222,7 @@ public class FreeformHintView extends FrameLayout {
         if (mVisibilityAnimator != null) mVisibilityAnimator.cancel();
 
         mIsVisible = visible;
-        requestLayout();   // trigger measure for (non)‑zero size
+        requestLayout();
 
         ValueAnimator alpha = ValueAnimator.ofFloat(mHintAlpha, visible ? 1f : 0f);
         alpha.addUpdateListener(a -> {
